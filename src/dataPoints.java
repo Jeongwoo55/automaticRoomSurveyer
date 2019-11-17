@@ -6,6 +6,13 @@ public class dataPoints
     private double yVal;
     private double distance;
 
+    public dataPoints()
+    {
+        distance = 0;
+        xVal = 0;
+        yVal = 0;
+    }
+
     public dataPoints(double dist)
     {
         distance = dist;
