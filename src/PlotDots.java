@@ -8,9 +8,11 @@ import java.util.Scanner;
 
 public class PlotDots extends JFrame
 {
-    static int DATATHRESHOLD = 50;
-    static int ANGLETHRESHOLD = 5;
-    static int DATAMULTIPLIER = 100;
+    static int DATAMULTIPLIER = 1;
+    static int SCALER = 9;
+    static int DATATHRESHOLD = Integer.MAX_VALUE;
+    static int ANGLETHRESHOLD = 0;
+    static String FILENAME = "rectangleData.txt";
     static int screenHeight = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
     static int screenWidth = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 
@@ -18,16 +20,44 @@ public class PlotDots extends JFrame
     private ArrayList<dataPoints> dataArray = new ArrayList<>();
     private int windowHeight;
     private int windowWidth;
-    private int counter = 0;
+    private int totalDataCounter = 0;
+    private double area;
 
     public PlotDots() throws FileNotFoundException
     {
         makeTheWindow();
         readData();
         convertDataToDots();
+        area = calculateArea();
+        removeRandomAngles();
         testAngles();
         testDistance();
         makeJLabels();
+    }
+
+    private void removeRandomAngles()
+    {
+        int arraySize = dataArray.size();
+        if(!checkAngleChange(angleCalculation(dataArray.get(dataArray.size()-1),dataArray.get(0),dataArray.get(1))))
+        {
+            dataArray.remove(0);
+            arraySize--;
+        }
+
+        for (int i = 1; i < arraySize-1; i++)
+        {
+            if(!checkAngleChange(angleCalculation(dataArray.get(i-1),dataArray.get(i),dataArray.get(i+1))))
+            {
+                dataArray.remove(i);
+                arraySize--;
+            }
+        }
+
+        if(!checkAngleChange(angleCalculation(dataArray.get(dataArray.size()-2),dataArray.get(dataArray.size()-1),dataArray.get(0))))
+        {
+            dataArray.remove(dataArray.size()-1);
+            arraySize--;
+        }
     }
 
     public void makeTheWindow()
@@ -52,7 +82,7 @@ public class PlotDots extends JFrame
         titleLabel.setBounds(5, 0, 400, 20);
         window.add(titleLabel);
 
-        JLabel areaLabel = new JLabel("The area of the room is " + calculateArea() + " centimeters sqaured.");
+        JLabel areaLabel = new JLabel("The area of the room is " + area + " centimeters sqaured.");
         areaLabel.setBounds(5,20,400,20);
         window.add(areaLabel);
 
@@ -63,32 +93,60 @@ public class PlotDots extends JFrame
 
     public void readData() throws FileNotFoundException
     {
-        Scanner file = new Scanner(new File("data.dat"));
-        int i = 0;
+        Scanner file = new Scanner(new File(FILENAME));
+        Scanner file2 = new Scanner(new File(FILENAME));
 
         while(file.hasNextDouble())
         {
-            double tempData = DATAMULTIPLIER * file.nextDouble();
+            file.nextDouble();
+            totalDataCounter++;
+        }
+
+//        file.close();
+//        file = new Scanner(new File(FILENAME));
+
+        for (int i = 0; i < totalDataCounter; i++)
+        {
+            double tempData = DATAMULTIPLIER * file2.nextDouble();
             if (i == 0)
             {
                 dataArray.add(new dataPoints(tempData));
+                dataArray.get(i).setDeg(i * (360.0/totalDataCounter));
             }
             else
             {
                 if (Math.abs(tempData - dataArray.get(dataArray.size()-1).getDistance()) < DATATHRESHOLD)
                 {
                     dataArray.add(new dataPoints(tempData));
+                    dataArray.get(dataArray.size()-1).setDeg(i * (360.0/totalDataCounter));
                 }
             }
-            ++i;
         }
+
+//        while(file.hasNextDouble())
+//        {
+//            double tempData = DATAMULTIPLIER * file.nextDouble();
+//            if (i == 0)
+//            {
+//                dataArray.add(new dataPoints(tempData));
+//                dataArray
+//            }
+//            else
+//            {
+//                if (Math.abs(tempData - dataArray.get(dataArray.size()-1).getDistance()) < DATATHRESHOLD)
+//                {
+//                    dataArray.add(new dataPoints(tempData));
+//                }
+//            }
+//            ++i;
+//        }
     }
 
     private void convertDataToDots()
     {
         for (int i = 0; i < dataArray.size(); i++)
         {
-            dataArray.get(i).setDeg(i*(360/dataArray.size()));
+            dataArray.get(i).setDeg(i*(360/totalDataCounter));
         }
 
         for (int i = 0; i < dataArray.size(); i++)
@@ -104,10 +162,10 @@ public class PlotDots extends JFrame
 
         for (int i = 0; i < dataArray.size()-1; i++)
         {
-            Line2D line = new Line2D.Double((int)((windowWidth/2) + dataArray.get(i).getX()), (int)((windowHeight/2) - dataArray.get(i).getY()), (int)((windowWidth/2) + dataArray.get(i+1).getX()), (int)((windowHeight/2) - dataArray.get(i+1).getY()));
+            Line2D line = new Line2D.Double((int)((windowWidth/2) + dataArray.get(i).getX() * SCALER), (int)((windowHeight/2) - dataArray.get(i).getY() * SCALER), (int)((windowWidth/2) + dataArray.get(i+1).getX() * SCALER), (int)((windowHeight/2) - dataArray.get(i+1).getY() * SCALER));
             graphics.draw(line);
         }
-        Line2D line = new Line2D.Double((int)((windowWidth/2) + dataArray.get(dataArray.size()-1).getX()), (int)((windowHeight/2) - dataArray.get(dataArray.size()-1).getY()), (int)((windowWidth/2) + dataArray.get(0).getX()), (int)((windowHeight/2) - dataArray.get(0).getY()));
+        Line2D line = new Line2D.Double((int)((windowWidth/2) + dataArray.get(dataArray.size()-1).getX() * SCALER), (int)((windowHeight/2) - dataArray.get(dataArray.size()-1).getY() * SCALER), (int)((windowWidth/2) + dataArray.get(0).getX() * SCALER), (int)((windowHeight/2) - dataArray.get(0).getY() * SCALER));
         graphics.draw(line);
     }
 
@@ -165,7 +223,7 @@ public class PlotDots extends JFrame
         angleLabel.setText(angle + "" + (char)176);
 //        angleLabel.setHorizontalTextPosition(SwingConstants.LEFT);
 //        angleLabel.setVerticalTextPosition(SwingConstants.TOP);
-        angleLabel.setBounds((int)((windowWidth/2.0) + point.getX() - (width / 2.0)) + 20, (int)((windowHeight/2.0) - point.getY() - (height / 2.0)) - 20, width, height);
+        angleLabel.setBounds((int)((windowWidth/2.0) + point.getX() * SCALER - (width / 2.0)) + 20, (int)((windowHeight/2.0) - point.getY() * SCALER - (height / 2.0)) - 20, width, height);
 //        angleLabel.setLocation();
 //        angleLabel.setHorizontalAlignment(0);
 //        angleLabel.setVerticalAlignment(0);
@@ -193,8 +251,8 @@ public class PlotDots extends JFrame
         double distance = Math.round(distanceFormula(x, y) * 100) / 100.0;
         lineLabel.setText(distance + "cm ");
 
-        int labelX = (int)(x.getX() + ((y.getX() - x.getX()) / 2));
-        int labelY = (int)(y.getY() + ((x.getY() - y.getY()) / 2));
+        int labelX = (int)(x.getX() + ((y.getX() - x.getX()) / 2)) * SCALER;
+        int labelY = (int)(y.getY() + ((x.getY() - y.getY()) / 2)) * SCALER;
         lineLabel.setBounds((int)((windowWidth/2.0) + labelX - (0.5 * width)) + 10, (int)((windowHeight/2.0) - labelY - (0.5 * height)) - 30, width, height);
         window.add(lineLabel);
         window.repaint();
