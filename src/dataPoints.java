@@ -21,6 +21,11 @@ public class dataPoints
         return yVal;
     }
 
+    public double getDistance()
+    {
+        return distance;
+    }
+
     public void setDeg(double deg)
     {
         double radians;
