@@ -51,7 +51,7 @@ void check180() {
   delay(100);
   
   while(angle < 180) {  
-    if (millis() + 10 >= start) {
+    if (millis() >= start + 20) {//increase the rightmost constant to slow down and get more points
       angle++;
       servo.write(angle);
       start = millis();
@@ -60,7 +60,5 @@ void check180() {
     Serial.print(check());
     Serial.print(' ');
   
-    
-    //delay(1);
   }
 }
