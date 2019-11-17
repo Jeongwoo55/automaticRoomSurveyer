@@ -1,9 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Line2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class PlotDots extends JFrame
@@ -23,7 +23,7 @@ public class PlotDots extends JFrame
     {
         window = getContentPane();
         window.setLayout(null);
-        window.setBackground(Color.white);
+        window.setBackground(Color.red);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("Plot of Room");
         int screenHeight = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
@@ -59,10 +59,17 @@ public class PlotDots extends JFrame
 
     public void makeDots()
     {
-        for (int i = 0; i < dataArray.size(); i++)
-        {
-            
-        }
+        JPanel p = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                Shape line = new Line2D.Double(3, 3, 303, 303);
+                g2.draw(line);
+            }
+        };
+        setTitle("My Shapes");
+        p.setVisible(true);
+        window.add(p);
     }
 
     public static void main(String[] args) throws FileNotFoundException
