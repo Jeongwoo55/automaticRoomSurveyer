@@ -1,0 +1,2 @@
+box = 30cm x 24cm
+triangle = 24 cm height, 28 cm base and all sides
